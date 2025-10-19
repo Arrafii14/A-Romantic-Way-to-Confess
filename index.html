@@ -225,30 +225,30 @@ function spawnFloatingImages() {
     spawnShootingStars();
     spawnFloatingImages();
 
-      if(state.answered){
-        showFinal(state.status);
-      } else {
-        showSlide();
-      }
-
-        async function checkResetSignal() {
-      try {
-        const res = await fetch('/api/bot');
-        const data = await res.json();
-        if (data.reset) {
-          console.log('🔄 Reset signal received from Telegram');
-          localStorage.removeItem('laaa_state');
-          state = { answered: false, status: null };
-          idx = 0;
-          showSlide();
-          final.classList.add('hidden');
-          status.textContent = "🔁 Direset dari bintang Telegram oleh Rafff 🌠";
-        }
-      } catch (err) {
-        console.error('⚠️ Failed to check reset:', err);
-      }
+    if(state.answered){
+      showFinal(state.status);
+    } else {
+      showSlide();
     }
-    setInterval(checkResetSignal, 5000); // cek tiap 5 detik
+
+      async function checkResetSignal() {
+    try {
+      const res = await fetch('/api/bot');
+      const data = await res.json();
+      if (data.reset) {
+        console.log('🔄 Reset signal received from Telegram');
+        localStorage.removeItem('laaa_state');
+        state = { answered: false, status: null };
+        idx = 0;
+        showSlide();
+        final.classList.add('hidden');
+        status.textContent = "🔁 Direset dari bintang Telegram oleh Rafff 🌠";
+      }
+    } catch (err) {
+      console.error('⚠️ Failed to check reset:', err);
+    }
+  }
+  setInterval(checkResetSignal, 5000); // cek tiap 5 detik
 
   </script>
 </body>
