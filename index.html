@@ -231,23 +231,26 @@ function spawnFloatingImages() {
       showSlide();
     }
 
-      async function checkResetSignal() {
-    try {
-      const res = await fetch('/api/bot');
-      const data = await res.json();
-      if (data.reset) {
-        console.log('🔄 Reset signal received from Telegram');
-        localStorage.removeItem('laaa_state');
-        state = { answered: false, status: null };
-        idx = 0;
-        showSlide();
-        final.classList.add('hidden');
-        status.textContent = "🔁 Direset dari bintang Telegram oleh Rafff 🌠";
+    async function checkResetSignal() {
+      try {
+        const res = await fetch('/api/bot');
+        const data = await res.json();
+
+        // jika answered == false → reset ke awal
+        if (!data.answered) {
+          console.log('🔄 Reset signal detected (answered = false)');
+          localStorage.removeItem('laaa_state');
+          state = { answered: false, status: null };
+          idx = 0;
+          showSlide();
+          final.classList.add('hidden');
+          status.textContent = "🔁 Direset oleh semesta melalui Telegram 🌠";
+        }
+      } catch (err) {
+        console.error('⚠️ Failed to check reset:', err);
       }
-    } catch (err) {
-      console.error('⚠️ Failed to check reset:', err);
     }
-  }
+
   setInterval(checkResetSignal, 5000); // cek tiap 5 detik
 
   </script>
