@@ -1,9 +1,11 @@
 // =======================
 // 🔧 CONFIGURATION
 // =======================
-const JSONBIN_API = "https://api.jsonbin.io/v3/b/68f4b509ae596e708f1c658a";
-const JSONBIN_KEY = "$2a$10$78gA9G1LEzCRH4U2PwJqeXB/Cp8jXqh2wRWUV/tyKy9g7FzhFRm6";
 
+// ganti dengan Blob ID lo
+const JSONBLOB_API = "https://jsonblob.com/api/jsonBlob/1429425578867613696";
+
+// 🔹 TELEGRAM
 const TOKEN = "8346279666:AAGYCj_7F64omKnkc_3IccstBVTewxJBwDc";
 const CHAT_ID = "625857115";
 
@@ -25,16 +27,14 @@ export default async function handler(req, res) {
         userAgent,
       };
 
-      // ✅ update value bin (bukan versi meta)
-      await fetch(`${JSONBIN_API}/latest`, {
+      // update blob
+      await fetch(JSONBLOB_API, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Master-Key": JSONBIN_KEY,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
+      // kirim notif ke Telegram
       const message = `🪐 Ilaaa udah menjawab!\n💫 Status: ${
         status === "accept" ? "💚 DITERIMA" : "😭 DITOLAK"
       }\n📅 ${timestamp}\n📱 ${userAgent.slice(0, 50)}...`;
@@ -44,15 +44,11 @@ export default async function handler(req, res) {
     }
 
     // =========================================================
-    // 2️⃣ GET dari web (cek status di browser)
+    // 2️⃣ GET dari web (cek status terakhir)
     // =========================================================
     if (req.method === "GET") {
-      // ✅ ambil value murni dari bin
-      const r = await fetch(`${JSONBIN_API}/latest?meta=false`, {
-        headers: { "X-Master-Key": JSONBIN_KEY },
-      });
-
-      if (!r.ok) throw new Error("JSONBin fetch failed");
+      const r = await fetch(JSONBLOB_API, { cache: "no-store" });
+      if (!r.ok) throw new Error("JSONBlob fetch failed");
       const record = await r.json();
 
       const normalized = {
@@ -83,12 +79,9 @@ export default async function handler(req, res) {
           timestamp: new Date().toLocaleString(),
         };
 
-        await fetch(`${JSONBIN_API}/latest`, {
+        await fetch(JSONBLOB_API, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Master-Key": JSONBIN_KEY,
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(reset),
         });
 
@@ -97,9 +90,7 @@ export default async function handler(req, res) {
 
       // 📊 /status
       if (text === "/status") {
-        const r = await fetch(`${JSONBIN_API}/latest?meta=false`, {
-          headers: { "X-Master-Key": JSONBIN_KEY },
-        });
+        const r = await fetch(JSONBLOB_API, { cache: "no-store" });
         const record = await r.json();
 
         let reply = "📊 *Status Saat Ini*\n";
@@ -112,6 +103,7 @@ export default async function handler(req, res) {
             record.userAgent?.slice(0, 50) || "-"
           }`;
         }
+
         await sendMsg(reply, true);
       }
 
@@ -123,6 +115,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    // =========================================================
+    // ❌ selain itu
+    // =========================================================
     res.status(405).json({ error: "Method not allowed" });
   } catch (err) {
     console.error("🔥 ERROR:", err);
@@ -130,7 +125,7 @@ export default async function handler(req, res) {
   }
 
   // =========================================================
-  // Helper kirim Telegram
+  // 🧩 Helper kirim Telegram
   // =========================================================
   async function sendMsg(text, markdown = false) {
     await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
