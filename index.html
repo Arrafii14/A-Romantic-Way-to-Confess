@@ -207,13 +207,13 @@
       }
     }
 
-    // cek sinyal reset dari backend (misal Telegram trigger)
     async function checkResetSignal() {
       try {
         const res = await fetch('/api/bot', { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
 
+        // cuma reset kalau benar-benar flag reset aktif
         if (data.reset === true && !data.answered) {
           console.log('🔄 Reset detected');
           localStorage.removeItem('laaa_state');
@@ -224,11 +224,11 @@
           final.classList.add('hidden');
           status.textContent = "🔁 Direset dari Telegram 🌠";
 
-          // hapus flag reset di server
+          // hapus flag reset biar gak keulang
           await fetch('/api/bot', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reset: false })
+            body: JSON.stringify({ answered: false, reset: false })
           });
         }
       } catch (err) {
@@ -236,30 +236,32 @@
       }
     }
 
-document.addEventListener('DOMContentLoaded', () => {
-  spawnStars();
-  spawnShootingStars();
-  spawnFloatingImages();
-  syncStatus(); // ✅ load awal sekali
 
-  // klik buat lanjut slide
-  document.getElementById('content').addEventListener('click', () => {
-    if (state.answered) return;
-    if (idx < slides.length) { 
-      idx++; 
-      showSlide(); 
-      bgm.play(); 
-    }
-  });
+    document.addEventListener('DOMContentLoaded', () => {
+      spawnStars();
+      spawnShootingStars();
+      spawnFloatingImages();
+      syncStatus(); // 🚀 ambil status awal
 
-  document.getElementById('accept').onclick = () => choose('accept');
-  document.getElementById('reject').onclick = () => choose('reject');
+      // klik buat lanjut slide
+      document.getElementById('content').addEventListener('click', () => {
+        if (state.answered) return;
+        if (idx < slides.length) {
+          idx++;
+          showSlide();
+          bgm.play();
+        }
+      });
 
-  // ✅ ini juga boleh tetap, tapi kita ubah sedikit biar gak spam
-  setInterval(() => {
-    checkResetSignal();
-  }, 8000); // ubah jadi tiap 8 detik, biar lebih aman
-});
+      document.getElementById('accept').onclick = () => choose('accept');
+      document.getElementById('reject').onclick = () => choose('reject');
+
+      // 🕒 cek reset hanya sekali, dengan delay 5 detik
+      setTimeout(() => {
+        checkResetSignal();
+      }, 5000);
+    });
+
 
 </script>
   
