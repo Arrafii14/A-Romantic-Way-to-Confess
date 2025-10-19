@@ -98,7 +98,7 @@
       `<h2>💫 Orbit Nyaman</h2><p>Aku udah ngerasa nyaman banget sama kamu.... :3</p>` ,
       `<h2>🚀 Misi Serius</h2><p>Aku pengen kita coba ke arah yang lebih serius walaupun kita masih terpisah oleh jarak dan zona waktu XD.</p>` ,
       `<h2>🌌 Waktu dan Ruang</h2><p>Kamu nggak harus jawab sekarang, kok.</p>` ,
-      `<h2>💖 Pengakuan Meteor</h2><p>Kamu itu cewek pertama yang aku tembak, Laaa. 🤍</p>`
+      `<h2>💖 Pengakuan Meteor</h2><p>FYI Laaa, Kamu itu cewek pertama yang aku tembak, Laaa. 🤍</p>`
     ];
 
     const acceptedSlides=[ `<h2>🎉 Yipeeeee! Ilaaa Mau!</h2><p>Rasanya kayak hujan bintang jatuh di malam hariiiii ✨</p>` ];
@@ -130,21 +130,18 @@
     }
 
 function spawnFloatingImages() {
-    const images = ['https://i.ibb.co.com/QjmhkVqj/pngwing-com-1.png', 'https://i.ibb.co.com/5XDcjN1M/pngwing-com-2.png', 'https://i.ibb.co.com/TqT1nx97/pngwing-com-3.png', 'https://i.ibb.co.com/BVPQxK47/4.png', 'https://i.ibb.co.com/6j9NfLF/pngwing-com-5.png', 'https://i.ibb.co.com/k2GqCCNj/pngwing-com.png', 'https://i.ibb.co.com/ymhzzx0Q/pngwing-com-6.png', 'https://i.ibb.co.com/chrJ71nf/8.png'];
-    images.forEach((url, i) => {
-        const img = document.createElement('img');
-        img.src = url;
-        img.className = 'floating-img';
-        img.style.top = Math.random() * 70 + 'vh';
-        img.style.left = Math.random() * 100 + 'vw';
-        img.style.animationDelay = (i * 3) + 's';
-        img.style.animationDuration = (20 + i) + 's';
-        document.body.insertBefore(img, document.getElementById('content'));
-    });
-}
+  const images = [
+    'https://i.ibb.co/QjmhkVqj/pngwing-com-1.png',
+    'https://i.ibb.co/5XDcjN1M/pngwing-com-2.png',
+    'https://i.ibb.co/TqT1nx9/pngwing-com-3.png',
+    'https://i.ibb.co/BVPQxK4/4.png',
+    'https://i.ibb.co/6j9NfLF/pngwing-com-5.png',
+    'https://i.ibb.co/k2GqCCN/pngwing-com.png',
+    'https://i.ibb.co/ymhzzx0/pngwing-com-6.png',
+    'https://i.ibb.co/chrJ71n/8.png'
+  ];
 
-
-    images.forEach((url, i) => {
+  images.forEach((url, i) => {
     const img = document.createElement('img');
     img.src = url;
     img.className = 'floating-img';
@@ -153,8 +150,9 @@ function spawnFloatingImages() {
     img.style.animationDelay = (i * 3) + 's';
     img.style.animationDuration = (20 + i) + 's';
     document.body.insertBefore(img, document.getElementById('content'));
-    });
-    }
+  });
+}
+
 
     function showSlide(){
       text.style.opacity=0;
@@ -185,7 +183,7 @@ function spawnFloatingImages() {
     function showFinal(choice){
       text.innerHTML = (choice==='accept'?acceptedSlides:rejectedSlides).join('');
       final.classList.add('hidden');
-      status.textContent = choice==='accept'? '💚 Terima! Makasih ya, Laaa ✨' : '😭 Tolak... tapi gapapa, semoga semestamu tetap indah 🌙';
+      status.textContent = choice==='accept'? '💚 Terima Kasih <3 Makasih ya, Ilaaa ✨' : '😭 Tolak... tapi gapapa, semoga semestamu tetap indah 🌙';
       spawnEffect(choice);
     }
 
