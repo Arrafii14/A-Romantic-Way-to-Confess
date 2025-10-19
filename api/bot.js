@@ -2,7 +2,6 @@
 // 🔧 CONFIGURATION
 // =======================
 
-// ganti dengan Blob ID lo
 const JSONBLOB_API = "https://jsonblob.com/api/jsonBlob/1429425578867613696";
 
 // 🔹 TELEGRAM
@@ -19,7 +18,13 @@ export default async function handler(req, res) {
     // =========================================================
     if (req.method === "POST" && !req.url.includes("?webhook=1")) {
       const { status, timestamp, userAgent } = req.body;
+
+      // ambil data lama dulu (biar ga overwrite state lain)
+      const oldRes = await fetch(JSONBLOB_API, { cache: "no-store" });
+      const oldData = oldRes.ok ? await oldRes.json() : {};
+
       const data = {
+        ...oldData, // pertahankan field lama (biar non-destructive)
         answered: true,
         reset: false,
         status,
@@ -72,7 +77,12 @@ export default async function handler(req, res) {
 
       // 🧹 /reset
       if (text === "/reset") {
+        // ambil data lama dulu, biar ga hilang field penting
+        const oldRes = await fetch(JSONBLOB_API, { cache: "no-store" });
+        const oldData = oldRes.ok ? await oldRes.json() : {};
+
         const reset = {
+          ...oldData,
           answered: false,
           reset: true,
           status: null,
