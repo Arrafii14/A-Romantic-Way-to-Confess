@@ -116,9 +116,26 @@
     }
   }
 
-  function logAnswer(choice){
-    const logData={ status:choice, timestamp:new Date().toLocaleString(), userAgent:navigator.userAgent };
-    fetch('/api/bot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logData)});
+  // kirim hasil jawaban ke server
+  async function logAnswer(choice) {
+    const logData = {
+      status: choice,
+      timestamp: new Date().toLocaleString(),
+      userAgent: navigator.userAgent
+    };
+
+    try {
+      const res = await fetch('/api/bot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(logData)
+      });
+      if (!res.ok) throw new Error('Server error');
+      console.log('✅ Logged:', choice);
+    } catch (err) {
+      console.warn('⚠️ Gagal kirim log, simpan lokal:', err);
+      localStorage.setItem('pending_log', JSON.stringify(logData));
+    }
   }
 
   function spawnFloatingImages() {
@@ -169,71 +186,69 @@
     },2500);
   }
 
-  async function syncStatus(){
-    try{
-      const res=await fetch('/api/bot');
-      const data=await res.json();
-      if(data.answered){
-        state={answered:true,status:data.status};
-        showFinal(data.status);
-      }else{
-        state={answered:false,status:null};
-        idx=0;
-        showSlide();
+      // ambil status terakhir dari server
+    async function syncStatus() {
+      try {
+        const res = await fetch('/api/bot', { cache: 'no-store' });
+        if (!res.ok) throw new Error('fetch failed');
+        const data = await res.json();
+
+        if (data?.answered) {
+          state = { answered: true, status: data.status };
+          showFinal(data.status);
+        } else {
+          state = { answered: false, status: null };
+          idx = 0;
+          showSlide();
+        }
+      } catch (err) {
+        console.warn('🌐 Fetch gagal, pakai localStorage');
+        const pending = localStorage.getItem('pending_log');
+        if (pending) {
+          try {
+            await fetch('/api/bot', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: pending
+            });
+            localStorage.removeItem('pending_log');
+          } catch {}
+        }
+        // fallback
+        if (state.answered) showFinal(state.status);
+        else showSlide();
       }
-    }catch(e){showSlide();}
-  }
-
-  async function syncStatus() {
-  try {
-    const res = await fetch('/api/bot');
-    const data = await res.json();
-    console.log('Sync:', data);
-
-    // kalau JSON kosong, abaikan reset
-    if (!data) return showSlide();
-
-    if (data.answered) {
-      state = { answered: true, status: data.status };
-      showFinal(data.status);
-    } else {
-      // kalau belum answered tapi belum direset, jangan anggap reset
-      state = { answered: false, status: null };
-      idx = 0;
-      showSlide();
     }
-  } catch (e) {
-    console.error('sync error', e);
-    showSlide();
-  }
-}
 
-async function checkResetSignal() {
-  try {
-    const res = await fetch('/api/bot');
-    const data = await res.json();
+    // cek sinyal reset dari backend (misal Telegram trigger)
+    async function checkResetSignal() {
+      try {
+        const res = await fetch('/api/bot', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
 
-    // cuma reset kalau JSONBin memang bilang reset:true
-    if (data.reset && !data.answered) {
-      console.log('🔄 Reset signal detected');
-      localStorage.removeItem('laaa_state');
-      state = { answered: false, status: null };
-      idx = 0;
-      showSlide();
-      final.classList.add('hidden');
-      status.textContent = "🔁 Direset dari Telegram 🌠";
+        if (data.reset === true && !data.answered) {
+          console.log('🔄 Reset detected');
+          localStorage.removeItem('laaa_state');
+          localStorage.removeItem('pending_log');
+          state = { answered: false, status: null };
+          idx = 0;
+          showSlide();
+          final.classList.add('hidden');
+          status.textContent = "🔁 Direset dari Telegram 🌠";
 
-      // hapus flag reset biar ga looping
-      await fetch('/api/bot', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answered: false, reset: false })
-      });
+          // hapus flag reset di server
+          await fetch('/api/bot', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reset: false })
+          });
+        }
+      } catch (err) {
+        console.error('checkReset error', err);
+      }
     }
-  } catch (err) {
-    console.error('checkReset error', err);
-  }
-}
+
 document.addEventListener('DOMContentLoaded', () => {
   spawnStars();
   spawnShootingStars();
