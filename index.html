@@ -222,7 +222,6 @@
           idx = 0;
           showSlide();
           final.classList.add('hidden');
-          status.textContent = "🔁 Direset dari Telegram 🌠";
 
           // hapus flag reset biar gak keulang
           await fetch('/api/bot', {
@@ -259,7 +258,7 @@
       // 🕒 cek reset hanya sekali, dengan delay 5 detik
       setTimeout(() => {
         checkResetSignal();
-      }, 5000);
+      }, 150000);
     });
 
 
