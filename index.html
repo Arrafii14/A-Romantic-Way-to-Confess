@@ -129,7 +129,8 @@
       },2500);
     }
 
-function spawnFloatingImages() {
+
+  function spawnFloatingImages() {
   const images = [
     'https://i.ibb.co/QjmhkVqj/pngwing-com-1.png',
     'https://i.ibb.co/5XDcjN1M/pngwing-com-2.png',
@@ -144,11 +145,15 @@ function spawnFloatingImages() {
   images.forEach((url, i) => {
     const img = document.createElement('img');
     img.src = url;
+    img.alt = `totoro-${i + 1}`;
     img.className = 'floating-img';
+    img.style.position = 'absolute';
     img.style.top = Math.random() * 70 + 'vh';
     img.style.left = Math.random() * 100 + 'vw';
+    img.style.width = '80px';
+    img.style.opacity = '0.8';
+    img.style.animation = `float ${15 + i * 2}s ease-in-out infinite`;
     img.style.animationDelay = (i * 3) + 's';
-    img.style.animationDuration = (20 + i) + 's';
     document.body.insertBefore(img, document.getElementById('content'));
   });
 }
