@@ -129,7 +129,13 @@
     </div>
     <p id="status" class="text-sm mt-4 opacity-80"></p>
   </div>
-<audio id="bgm" src="/audio/bgm.mp3" loop preload="auto"></audio>
+<audio id="bgm"
+  src="/audio/bgm.mp3"
+  autoplay
+  muted
+  loop
+  preload="auto"></audio>
+
 
 <script>
   const text=document.getElementById('text');
@@ -305,6 +311,18 @@
       }
     }
 
+
+    document.addEventListener('DOMContentLoaded', () => {
+    bgm.volume = 0;
+    bgm.play().then(() => {
+      let vol = 0;
+      const fade = setInterval(() => {
+        vol += 0.02;
+        bgm.volume = vol;
+        if (vol >= 0.5) clearInterval(fade);
+      }, 100);
+    }).catch(err => console.warn("Autoplay blocked:", err));
+  });
 
     document.addEventListener('DOMContentLoaded', () => {
       spawnStars();
