@@ -186,35 +186,22 @@
     },2500);
   }
 
-      // ambil status terakhir dari server
     async function syncStatus() {
       try {
         const res = await fetch('/api/bot', { cache: 'no-store' });
         if (!res.ok) throw new Error('fetch failed');
         const data = await res.json();
 
-        if (data?.answered) {
+        if (data.answered === true) { // pastikan strict check
           state = { answered: true, status: data.status };
           showFinal(data.status);
         } else {
           state = { answered: false, status: null };
           idx = 0;
-          showSlide();
+          showSlide(); // mulai dari slide 0
         }
       } catch (err) {
         console.warn('🌐 Fetch gagal, pakai localStorage');
-        const pending = localStorage.getItem('pending_log');
-        if (pending) {
-          try {
-            await fetch('/api/bot', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: pending
-            });
-            localStorage.removeItem('pending_log');
-          } catch {}
-        }
-        // fallback
         if (state.answered) showFinal(state.status);
         else showSlide();
       }

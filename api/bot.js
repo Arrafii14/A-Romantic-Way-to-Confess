@@ -37,14 +37,25 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, message: "sent to telegram" });
     }
 
-    // 2️⃣ GET dari web (buat check status di browser)
+        // 2️⃣ GET dari web (buat check status di browser)
     if (req.method === "GET") {
       const r = await fetch(JSONBIN_API, {
         headers: { "X-Master-Key": JSONBIN_KEY },
       });
       const d = await r.json();
-      return res.status(200).json(d.record);
+      const record = d.record || {};
+
+      // pastikan selalu punya field boolean
+      const normalized = {
+        answered: record.answered === true,
+        reset: record.reset === true,
+        status: record.status || null,
+        timestamp: record.timestamp || null,
+      };
+
+      return res.status(200).json(normalized);
     }
+
 
     // 3️⃣ Webhook Telegram (/reset, /status, /ping)
     if (req.method === "POST" && req.url.includes("?webhook=1")) {
