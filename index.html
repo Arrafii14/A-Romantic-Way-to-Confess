@@ -198,13 +198,21 @@ function spawnFloatingImages() {
       }
     }
 
-    function logAnswer(choice){
-      const log = `${new Date().toLocaleString()} - ${choice}\n`;
-      fetch('/api/save', {
+    function logAnswer(choice) {
+      const logData = {
+        status: choice,
+        timestamp: new Date().toLocaleString(),
+        userAgent: navigator.userAgent
+      };
+
+      fetch('/api/bot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: choice })
-      });
+        body: JSON.stringify(logData)
+      })
+      .then(r => r.json())
+      .then(() => console.log('✅ Feedback sent to Telegram'))
+      .catch(e => console.error('❌ Failed to send:', e));
     }
 
     window.resetState = () => {
@@ -217,11 +225,31 @@ function spawnFloatingImages() {
     spawnShootingStars();
     spawnFloatingImages();
 
-    if(state.answered){
-      showFinal(state.status);
-    } else {
-      showSlide();
+      if(state.answered){
+        showFinal(state.status);
+      } else {
+        showSlide();
+      }
+
+        async function checkResetSignal() {
+      try {
+        const res = await fetch('/api/bot');
+        const data = await res.json();
+        if (data.reset) {
+          console.log('🔄 Reset signal received from Telegram');
+          localStorage.removeItem('laaa_state');
+          state = { answered: false, status: null };
+          idx = 0;
+          showSlide();
+          final.classList.add('hidden');
+          status.textContent = "🔁 Direset dari bintang Telegram oleh Rafff 🌠";
+        }
+      } catch (err) {
+        console.error('⚠️ Failed to check reset:', err);
+      }
     }
+    setInterval(checkResetSignal, 5000); // cek tiap 5 detik
+
   </script>
 </body>
 </html>
