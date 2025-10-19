@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laaa — Astronomi x Ghibli Vibes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body { background: radial-gradient(ellipse at top, #1e1b4b, #0b1026); overflow:hidden; cursor:pointer; }
+    .star { position:absolute; border-radius:50%; background:white; opacity:0.8; animation:twinkle 3s ease-in-out infinite; }
+    @keyframes twinkle { 0%,100%{opacity:.3;} 50%{opacity:1;} }
+
+    .shooting-star { position:absolute; width:3px; height:3px; background:white; border-radius:50%; box-shadow:0 0 15px 5px rgba(255,255,255,0.8); animation:shoot 2s ease-out forwards; }
+    @keyframes shoot { 0% { transform: translate(0,0) rotate(-45deg); opacity:1; } 100% { transform: translate(100vw,100vh) rotate(-45deg); opacity:0; } }
+
+    .floating-img { position:absolute; width:80px; opacity:0.8; animation:float 20s ease-in-out infinite; pointer-events:none; z-index:0; }
+    @keyframes float {
+      0% { transform: translate(0,0) rotate(0deg); }
+      25% { transform: translate(600px,-300px) rotate(15deg); }
+      50% { transform: translate(-400px,250px) rotate(-10deg); }
+      75% { transform: translate(350px,200px) rotate(10deg); }
+      100% { transform: translate(0,0) rotate(0deg); }
+    }
+
+    .confetti, .heart, .broken-heart {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: fall 2.5s linear forwards;
+      z-index:20;
+    }
+    .heart::before, .heart::after {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 16px;
+      background: red;
+      border-radius: 10px 10px 0 0;
+      top: 0;
+      left: 10px;
+      transform: rotate(-45deg);
+    }
+    .heart::after {
+      left: 0;
+      transform: rotate(45deg);
+    }
+    .broken-heart::before, .broken-heart::after {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 16px;
+      background: pink;
+      border-radius: 10px 10px 0 0;
+      top: 0;
+      left: 10px;
+      transform: rotate(-45deg);
+    }
+    .broken-heart::after {
+      left: 0;
+      transform: rotate(45deg);
+    }
+
+    @keyframes fall { 0% { transform: translateY(0) scale(1); opacity:1; } 100% { transform: translateY(100vh) scale(0.7); opacity:0; } }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen text-white font-poppins relative">
+  <div id="sky"></div>
+  <div id="content" class="max-w-2xl text-center p-8 rounded-3xl bg-white/10 backdrop-blur-lg shadow-2xl relative z-10">
+    <section id="text" class="text-xl md:text-2xl leading-relaxed space-y-4"></section>
+    <div id="final" class="hidden mt-8 flex flex-col gap-3 items-center">
+      <h3 class="text-lg font-semibold">🌠 Pilihan Akhirmu</h3>
+      <p class="text-white/80 text-sm">Klik salah satu tombol di bawah ini, dan semesta akan mencatatnya.</p>
+      <div class="flex gap-4 justify-center">
+        <button id="accept" class="px-6 py-3 bg-green-400 text-black rounded-2xl hover:scale-105 transition-transform">💚 Terima</button>
+        <button id="reject" class="px-6 py-3 bg-white text-black rounded-2xl hover:scale-105 transition-transform">😭 Tolak</button>
+      </div>
+    </div>
+    <p id="status" class="text-sm mt-4 opacity-80"></p>
+  </div>
+  <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2022/10/21/audio_cdbede0b4c.mp3?filename=lofi-study-112191.mp3" loop></audio>
+
+  <script>
+    const text=document.getElementById('text');
+    const final=document.getElementById('final');
+    const bgm=document.getElementById('bgm');
+    const status=document.getElementById('status');
+    let idx=0;
+
+    let state = JSON.parse(localStorage.getItem('laaa_state')) || { answered: false, status: null };
+
+    const slides=[
+      `<h2>🌙 Pembuka Galaksi</h2><p>Hei Laaa... boleh aku jujur sedikit?</p>` ,
+      `<h2>💫 Orbit Nyaman</h2><p>Aku udah ngerasa nyaman banget sama kamu.</p>` ,
+      `<h2>🚀 Misi Serius</h2><p>Aku pengen kita coba ke arah yang lebih serius.</p>` ,
+      `<h2>🌌 Waktu dan Ruang</h2><p>Kamu nggak harus jawab sekarang, kok.</p>` ,
+      `<h2>💖 Pengakuan Meteor</h2><p>Kamu itu cewek pertama yang aku tembak, Laaa. 🤍</p>`
+    ];
+
+    const acceptedSlides=[ `<h2>🎉 Yay! Laaa Mau!</h2><p>Rasanya kayak hujan bintang jatuh malam ini ✨</p>` ];
+    const rejectedSlides=[ `<h2>☁️ Tak Apa...</h2><p>Mungkin semesta belum waktunya menyatukan kita.</p>` ];
+
+    function spawnStars(){
+      const sky=document.getElementById('sky');
+      for(let i=0;i<150;i++){
+        const s=document.createElement('div');
+        s.className='star';
+        s.style.width=s.style.height=Math.random()*2+1+'px';
+        s.style.left=Math.random()*100+'vw';
+        s.style.top=Math.random()*100+'vh';
+        s.style.animationDelay=Math.random()*3+'s';
+        sky.appendChild(s);
+      }
+    }
+
+    function spawnShootingStars(){
+      const sky=document.getElementById('sky');
+      setInterval(()=>{
+        const ss=document.createElement('div');
+        ss.className='shooting-star';
+        ss.style.left=Math.random()*100+'vw';
+        ss.style.top=Math.random()*30+'vh';
+        sky.appendChild(ss);
+        setTimeout(()=>ss.remove(),2000);
+      },2500);
+    }
+
+    function spawnFloatingImages(){
+    const images = [];
+    // Load 7 images from local folder /images
+    for (let i = 1; i <= 8; i++) {
+    images.push(`images/${i}.png`);
+    }
+
+
+    images.forEach((url, i) => {
+    const img = document.createElement('img');
+    img.src = url;
+    img.className = 'floating-img';
+    img.style.top = Math.random() * 70 + 'vh';
+    img.style.left = Math.random() * 100 + 'vw';
+    img.style.animationDelay = (i * 3) + 's';
+    img.style.animationDuration = (20 + i) + 's';
+    document.body.insertBefore(img, document.getElementById('content'));
+    });
+    }
+
+    function showSlide(){
+      text.style.opacity=0;
+      setTimeout(()=>{
+        text.innerHTML=slides[idx]||'';
+        text.style.opacity=1;
+      },300);
+      final.classList.toggle('hidden',idx<slides.length);
+    }
+
+    document.body.onclick=()=>{
+      if(state.answered) return;
+      if(idx<slides.length){ idx++; showSlide(); bgm.play(); }
+    };
+
+    document.getElementById('accept').onclick=()=>choose('accept');
+    document.getElementById('reject').onclick=()=>choose('reject');
+
+    function choose(c){
+      if(state.answered) return;
+      state.answered = true;
+      state.status = c;
+      localStorage.setItem('laaa_state', JSON.stringify(state));
+      logAnswer(c);
+      showFinal(c);
+    }
+
+    function showFinal(choice){
+      text.innerHTML = (choice==='accept'?acceptedSlides:rejectedSlides).join('');
+      final.classList.add('hidden');
+      status.textContent = choice==='accept'? '💚 Terima! Makasih ya, Laaa ✨' : '😭 Tolak... tapi gapapa, semoga semestamu tetap indah 🌙';
+      spawnEffect(choice);
+    }
+
+    function spawnEffect(choice){
+      for(let i=0;i<50;i++){
+        const el=document.createElement('div');
+        el.className = choice==='accept' ? 'heart' : 'broken-heart';
+        el.style.left=Math.random()*100+'vw';
+        el.style.animationDuration=(2+Math.random()*1.5)+'s';
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(),3000);
+      }
+    }
+
+    function logAnswer(choice){
+      const log = `${new Date().toLocaleString()} - ${choice}\n`;
+      fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: choice })
+      });
+    }
+
+    window.resetState = () => {
+      state = { answered:false, status:null };
+      localStorage.removeItem('laaa_state');
+      idx = 0; showSlide(); final.classList.add('hidden');
+    }
+
+    spawnStars();
+    spawnShootingStars();
+    spawnFloatingImages();
+
+    if(state.answered){
+      showFinal(state.status);
+    } else {
+      showSlide();
+    }
+  </script>
+</body>
+</html>
