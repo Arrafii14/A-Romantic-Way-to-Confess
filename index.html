@@ -225,31 +225,43 @@ function spawnFloatingImages() {
     spawnShootingStars();
     spawnFloatingImages();
 
-  // 🔄 sinkronisasi awal: baca status dari server
-  (async function syncFromServer() {
-    try {
-      const res = await fetch('/api/bot');
-      const data = await res.json();
-      console.log('📡 Sync from server:', data);
+// 🔄 sinkronisasi awal: baca status dari server
+(async function syncFromServer() {
+  try {
+    const res = await fetch('/api/bot');
+    const data = await res.json();
+    console.log('📡 Sync from server:', data);
 
-      if (data.answered) {
-        // kalau udah answered di server
-        state = { answered: true, status: data.status };
-        localStorage.setItem('laaa_state', JSON.stringify(state));
-        showFinal(data.status);
-      } else {
-        // kalau belum answered
-        localStorage.removeItem('laaa_state');
-        state = { answered: false, status: null };
-        idx = 0;
-        showSlide();
-        final.classList.add('hidden');
-      }
-    } catch (err) {
-      console.error('⚠️ Gagal sync ke server:', err);
-      showSlide(); // fallback
+    if (data.answered) {
+      // kalau udah answered di server
+      state = { answered: true, status: data.status };
+      localStorage.setItem('laaa_state', JSON.stringify(state));
+      showFinal(data.status);
+    } else {
+      // kalau belum answered
+      localStorage.removeItem('laaa_state');
+      state = { answered: false, status: null };
+      idx = 0;
+      showSlide();
+      final.classList.add('hidden');
     }
-  })();
+
+    // pastikan event click tetap aktif setelah sync
+    document.body.onclick = () => {
+      if (state.answered) return;
+      if (idx < slides.length) {
+        idx++;
+        showSlide();
+        bgm.play();
+      }
+    };
+
+  } catch (err) {
+    console.error('⚠️ Gagal sync ke server:', err);
+    showSlide(); // fallback
+  }
+})();
+
 
     async function checkResetSignal() {
       try {
