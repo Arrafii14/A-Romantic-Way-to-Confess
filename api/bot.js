@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const body = await req.json();
     console.log("Body diterima:", body);
 
-    // reset via Telegram
+    // Reset via Telegram
     if (body.message?.text === "/reset") {
       await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
         method: "POST",
@@ -23,11 +23,12 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, reset: true });
     }
 
-    // kirim hasil dari website
+    // Kirim hasil dari website (accept/reject)
     if (body.status) {
       const message = `🪐 Laaa sudah menjawab!\n💫 Status: ${
         body.status === "accept" ? "💚 Terima" : "😭 Tolak"
       }\n⏰ ${new Date().toLocaleString("id-ID")}`;
+
       await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -36,6 +37,7 @@ export default async function handler(req, res) {
           text: message,
         }),
       });
+
       return res.status(200).json({ ok: true });
     }
 
