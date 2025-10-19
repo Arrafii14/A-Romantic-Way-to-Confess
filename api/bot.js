@@ -3,7 +3,7 @@
 // =======================
 
 // 🔹 GANTI 2 BARIS INI SESUAI JSONBIN LO
-const JSONBIN_API = "https://api.jsonbin.io/v3/b/670fc0f3e41b4d34e44a14df"; // ganti dengan Bin lo
+const JSONBIN_API = "https://api.jsonbin.io/v3/b/68f4b509ae596e708f1c658a"; // ganti dengan Bin lo
 const JSONBIN_KEY = "$2a$10$78gA9G1LEzCRH4U2PwJqeXB/Cp8jXqh2wRWUV/tyKy9g7FzhFRm6"; // ganti dengan X-MASTER-KEY lo
 
 // 🔹 TELEGRAM
