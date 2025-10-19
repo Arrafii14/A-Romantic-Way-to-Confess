@@ -129,12 +129,19 @@
       },2500);
     }
 
-    function spawnFloatingImages(){
-    const images = [];
-    // Load 7 images from local folder /images
-    for (let i = 1; i <= 8; i++) {
-    images.push(`images/${i}.png`);
-    }
+function spawnFloatingImages() {
+    const images = ['https://i.ibb.co.com/QjmhkVqj/pngwing-com-1.png', 'https://i.ibb.co.com/5XDcjN1M/pngwing-com-2.png', 'https://i.ibb.co.com/TqT1nx97/pngwing-com-3.png', 'https://i.ibb.co.com/BVPQxK47/4.png', 'https://i.ibb.co.com/6j9NfLF/pngwing-com-5.png', 'https://i.ibb.co.com/k2GqCCNj/pngwing-com.png', 'https://i.ibb.co.com/ymhzzx0Q/pngwing-com-6.png', 'https://i.ibb.co.com/chrJ71nf/8.png'];
+    images.forEach((url, i) => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'floating-img';
+        img.style.top = Math.random() * 70 + 'vh';
+        img.style.left = Math.random() * 100 + 'vw';
+        img.style.animationDelay = (i * 3) + 's';
+        img.style.animationDuration = (20 + i) + 's';
+        document.body.insertBefore(img, document.getElementById('content'));
+    });
+}
 
 
     images.forEach((url, i) => {
