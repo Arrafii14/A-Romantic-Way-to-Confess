@@ -13,22 +13,15 @@
 
   <style>
     /* 🔒 Kunci layout biar gak geser/zoom di mobile */
-    html {
-      width: 100%;
-      height: 100%;
-      overflow-x: hidden;
-      overscroll-behavior-y: contain; /* biar bisa pull-down refresh */
-    }
-
-    body {
+    html, body {
       width: 100%;
       height: 100%;
       margin: 0;
       padding: 0;
-      overflow-y: auto; /* aktifin vertical scroll dikit */
-      touch-action: manipulation; /* tetap cegah pinch / double-tap zoom */
+      overflow: hidden; /* hilangin scroll */
+      touch-action: manipulation; /* cegah pinch / double-tap zoom */
+      overscroll-behavior: none; /* biar gak mantul di HP */
       background: radial-gradient(ellipse at top, #1e1b4b, #0b1026);
-      cursor: pointer;
     }
 
     body {
