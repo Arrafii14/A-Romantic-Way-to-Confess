@@ -54,18 +54,21 @@ export default async function handler(req, res) {
       const text = body.message.text.trim().toLowerCase();
 
       // 🧹 /reset
-    if (text === "/reset") {
-      const reset = { answered: false }; // disederhanakan
-      await fetch(JSONBIN_API, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Master-Key": JSONBIN_KEY,
-        },
-        body: JSON.stringify(reset),
-      });
-      await sendMsg("🔁 Status Ilaaa udah direset oleh semesta 🌠");
-    }
+      // 🧹 /reset
+      if (text === "/reset") {
+        const reset = { answered: false, reset: true, timestamp: new Date().toLocaleString() };
+        await fetch(JSONBIN_API, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": JSONBIN_KEY,
+          },
+          body: JSON.stringify(reset),
+        });
+
+        await sendMsg("🔁 Status Ilaaa udah direset oleh semesta 🌠");
+      }
+
 
 
       // 📊 /status

@@ -184,38 +184,81 @@
     }catch(e){showSlide();}
   }
 
-  async function checkResetSignal(){
-    try{
-      const res=await fetch('/api/bot');
-      const data=await res.json();
-      if(!data.answered && state.answered){
-        localStorage.removeItem('laaa_state');
-        state={answered:false,status:null};
-        idx=0;
-        showSlide();
-        final.classList.add('hidden');
-        status.textContent="🔁 Direset dari Telegram 🌠";
-      }
-    }catch{}
+  async function syncStatus() {
+  try {
+    const res = await fetch('/api/bot');
+    const data = await res.json();
+    console.log('Sync:', data);
+
+    // kalau JSON kosong, abaikan reset
+    if (!data) return showSlide();
+
+    if (data.answered) {
+      state = { answered: true, status: data.status };
+      showFinal(data.status);
+    } else {
+      // kalau belum answered tapi belum direset, jangan anggap reset
+      state = { answered: false, status: null };
+      idx = 0;
+      showSlide();
+    }
+  } catch (e) {
+    console.error('sync error', e);
+    showSlide();
   }
+}
 
-  document.addEventListener('DOMContentLoaded',()=>{
-    spawnStars();
-    spawnShootingStars();
-    spawnFloatingImages();
-    syncStatus();
+async function checkResetSignal() {
+  try {
+    const res = await fetch('/api/bot');
+    const data = await res.json();
 
-    // klik ke #content supaya pasti terdaftar
-    document.getElementById('content').addEventListener('click',()=>{
-      if(state.answered) return;
-      if(idx<slides.length){ idx++; showSlide(); bgm.play(); }
-    });
+    // cuma reset kalau JSONBin memang bilang reset:true
+    if (data.reset && !data.answered) {
+      console.log('🔄 Reset signal detected');
+      localStorage.removeItem('laaa_state');
+      state = { answered: false, status: null };
+      idx = 0;
+      showSlide();
+      final.classList.add('hidden');
+      status.textContent = "🔁 Direset dari Telegram 🌠";
 
-    document.getElementById('accept').onclick=()=>choose('accept');
-    document.getElementById('reject').onclick=()=>choose('reject');
+      // hapus flag reset biar ga looping
+      await fetch('/api/bot', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answered: false, reset: false })
+      });
+    }
+  } catch (err) {
+    console.error('checkReset error', err);
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  spawnStars();
+  spawnShootingStars();
+  spawnFloatingImages();
+  syncStatus(); // ✅ load awal sekali
 
-    setInterval(checkResetSignal,5000);
+  // klik buat lanjut slide
+  document.getElementById('content').addEventListener('click', () => {
+    if (state.answered) return;
+    if (idx < slides.length) { 
+      idx++; 
+      showSlide(); 
+      bgm.play(); 
+    }
   });
+
+  document.getElementById('accept').onclick = () => choose('accept');
+  document.getElementById('reject').onclick = () => choose('reject');
+
+  // ✅ ini juga boleh tetap, tapi kita ubah sedikit biar gak spam
+  setInterval(() => {
+    checkResetSignal();
+  }, 8000); // ubah jadi tiap 8 detik, biar lebih aman
+});
+
 </script>
   
 </body>
